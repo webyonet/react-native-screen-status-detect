@@ -25,8 +25,8 @@ function GetKey(listener) {
 
 export default class ScreenStatusDetect {
 
-    static getCurrentStatus() {
-        return NativeScreenStatusDetect.getCurrentStatus;
+    static async getCurrentStatus() {
+        return await NativeScreenStatusDetect.getCurrentStatus();
     }
 
     static addListener(callback) {
