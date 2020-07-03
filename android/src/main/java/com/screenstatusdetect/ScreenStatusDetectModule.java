@@ -64,8 +64,6 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
     private void createDisplayListener() {
         final DisplayManager dm = (DisplayManager) reactContext.getSystemService(Context.DISPLAY_SERVICE);
 
-        sendEvent(getScreenStatus(dm));
-
         DisplayManager.DisplayListener mDisplayListener = new DisplayManager.DisplayListener() {
             @Override
             public void onDisplayAdded(int arg0) {
