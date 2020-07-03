@@ -1,0 +1,47 @@
+{
+  "name": "react-native-screen-status-detect",
+  "title": "React Native Screen Status Detect",
+  "version": "1.0.0",
+  "description": "React native screen status detect",
+  "homepage": "https://github.com/webyonet/react-native-permissions#README",
+  "main": "index.js",
+  "files": [
+    "README.md",
+    "/android",
+    "!/android/build",
+    "index.js",
+    "/ios",
+    "/*.podspec"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webyonet/react-native-screen-status-detect.git",
+    "baseUrl": "https://github.com/webyonet/react-native-screen-status-detect"
+  },
+  "keywords": [
+    "react-native",
+    "react native",
+    "react-native-screen-status-detect",
+    "react native screen status detect",
+    "screen status detect",
+    "screen status"
+  ],
+  "author": {
+    "name": "Burak Demirezen",
+    "email": "webyonet@hotmail.com"
+  },
+  "license": "MIT",
+  "licenseFilename": "LICENSE",
+  "readmeFilename": "README.md",
+  "peerDependencies": {
+    "react": "^16.8.1",
+    "react-native": ">=0.60.0-rc.0 <1.0.x"
+  },
+  "devDependencies": {
+    "react": ">=16.8.6",
+    "react-native": ">=0.60.0"
+  }
+}
