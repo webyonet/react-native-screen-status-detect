@@ -2,8 +2,11 @@ package com.screenstatusdetect;
 
 import android.app.Activity;
 import android.content.Context;
+import android.database.ContentObserver;
 import android.hardware.display.DisplayManager;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.view.Display;
 import android.view.WindowManager;
 import androidx.annotation.RequiresApi;
@@ -14,6 +17,7 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
     private final ReactApplicationContext reactContext;
     private DisplayManager displayManager;
     private DisplayManager.DisplayListener displayListener;
+    private ContentObserver contentObserver;
 
     public ScreenStatusDetectModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -61,7 +65,7 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
     public void getCurrentStatus(Promise promise) {
         if (promise != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                if(displayManager == null){
+                if (displayManager == null) {
                     displayManager = (DisplayManager) reactContext.getSystemService(Context.DISPLAY_SERVICE);
                 }
 
@@ -99,6 +103,32 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void subscribe() {
         if (displayManager != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+
+            contentObserver = new ContentObserver(null) {
+                @Override
+                public boolean deliverSelfNotifications() {
+                    return super.deliverSelfNotifications();
+                }
+
+                @Override
+                public void onChange(boolean selfChange, Uri uri) {
+                    super.onChange(selfChange, uri);
+                    if(isVideoFile(uri)){
+                        WritableMap map = Arguments.createMap();
+
+                        map.putString("screenStatus", "VIDEO_RECORDING_DETECTED");
+
+                        sendEvent(map);
+                    }
+                }
+            };
+
+            reactContext.getContentResolver().registerContentObserver(
+                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                    true,
+                    contentObserver
+            );
+
             displayManager.registerDisplayListener(displayListener, null);
         }
     }
@@ -106,6 +136,7 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void unsubscribe() {
         if (displayManager != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            reactContext.getContentResolver().unregisterContentObserver(contentObserver);
             displayManager.unregisterDisplayListener(displayListener);
         }
     }
@@ -122,6 +153,10 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
         }
 
         return map;
+    }
+
+    private boolean isVideoFile(Uri uri) {
+        return uri.toString().matches(MediaStore.Video.Media.EXTERNAL_CONTENT_URI.toString() + "/[0-9]+");
     }
 
     private void sendEvent(WritableMap params) {
