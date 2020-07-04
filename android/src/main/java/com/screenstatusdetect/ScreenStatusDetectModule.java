@@ -12,6 +12,8 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
     private final ReactApplicationContext reactContext;
+    private DisplayManager displayManager;
+    private DisplayManager.DisplayListener displayListener;
 
     public ScreenStatusDetectModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -32,7 +34,12 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
         final Activity activity = getCurrentActivity();
 
         if (activity != null) {
-            activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
+                }
+            });
         }
     }
 
@@ -41,7 +48,12 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
         final Activity activity = getCurrentActivity();
 
         if (activity != null) {
-            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+                }
+            });
         }
     }
 
@@ -49,9 +61,11 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
     public void getCurrentStatus(Promise promise) {
         if (promise != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                final DisplayManager dm = (DisplayManager) reactContext.getSystemService(Context.DISPLAY_SERVICE);
+                if(displayManager == null){
+                    displayManager = (DisplayManager) reactContext.getSystemService(Context.DISPLAY_SERVICE);
+                }
 
-                WritableMap result = getScreenStatus(dm);
+                WritableMap result = getScreenStatus(displayManager);
 
                 promise.resolve(result);
             } else {
@@ -62,27 +76,38 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void createDisplayListener() {
-        final DisplayManager dm = (DisplayManager) reactContext.getSystemService(Context.DISPLAY_SERVICE);
+        displayManager = (DisplayManager) reactContext.getSystemService(Context.DISPLAY_SERVICE);
 
-        DisplayManager.DisplayListener mDisplayListener = new DisplayManager.DisplayListener() {
+        displayListener = new DisplayManager.DisplayListener() {
             @Override
             public void onDisplayAdded(int arg0) {
-                sendEvent(getScreenStatus(dm));
+                sendEvent(getScreenStatus(displayManager));
             }
 
             @Override
             public void onDisplayChanged(int arg0) {
-                sendEvent(getScreenStatus(dm));
+                sendEvent(getScreenStatus(displayManager));
             }
 
             @Override
             public void onDisplayRemoved(int arg0) {
-                sendEvent(getScreenStatus(dm));
+                sendEvent(getScreenStatus(displayManager));
             }
         };
+    }
 
-        DisplayManager displayManager = (DisplayManager) reactContext.getSystemService(Context.DISPLAY_SERVICE);
-        displayManager.registerDisplayListener(mDisplayListener, null);
+    @ReactMethod
+    public void subscribe() {
+        if (displayManager != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            displayManager.registerDisplayListener(displayListener, null);
+        }
+    }
+
+    @ReactMethod
+    public void unsubscribe() {
+        if (displayManager != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            displayManager.unregisterDisplayListener(displayListener);
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)

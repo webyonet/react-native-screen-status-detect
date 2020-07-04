@@ -33,6 +33,10 @@ export default class ScreenStatusDetect {
         if (typeof callback === 'function') {
             let key = GetKey(callback);
 
+            if (Platform.OS === 'android') {
+                NativeScreenStatusDetect.subscribe();
+            }
+
             LISTENERS[key] = DeviceEventEmitter.addListener('screenStatusChange', callback);
         } else {
             console.error('callback is not a function');
@@ -42,6 +46,10 @@ export default class ScreenStatusDetect {
     static removeListener(callback) {
         if (typeof callback === 'function') {
             let key = GetKey(callback);
+
+            if (Platform.OS === 'android') {
+                NativeScreenStatusDetect.unsubscribe();
+            }
 
             if (LISTENERS[key]) {
                 LISTENERS[key].remove();
