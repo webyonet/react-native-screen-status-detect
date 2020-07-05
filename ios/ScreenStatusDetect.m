@@ -19,12 +19,17 @@
             // Fallback on earlier versions
         }
     }
+
     return self;
+}
+
++ (BOOL)requiresMainQueueSetup {
+  return YES;
 }
 
 -(void)screenStatusChange {
     NSString *status = [self screenStatus];
-    
+
     [self sendEventWithName:@"screenStatusChange" body:@{@"screenStatus": status}];
 }
 
@@ -44,7 +49,7 @@
             }
         }
     }
-    
+
     return @"SCREEN_NORMAL";
 }
 
