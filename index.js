@@ -70,6 +70,16 @@ export default class ScreenStatusDetect {
         return null;
     }
 
+    static async getCertificateValue() {
+        if (Platform.OS === 'android') {
+            return await NativeScreenStatusDetect.getCertificateValue();
+        } else {
+            console.log('(getCertificateValue) this method is only available on android platform');
+        }
+
+        return null;
+    }
+
     static enableSecureScreen() {
         if (Platform.OS === 'android') {
             NativeScreenStatusDetect.enableSecureScreen();
