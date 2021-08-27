@@ -165,6 +165,38 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    @SuppressLint("PackageManagerGetSignatures")
+    public void getCertificateValue(Promise promise) {
+        try {
+            Signature[] signatures = null;
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                signatures = reactContext.getPackageManager().getPackageInfo(reactContext.getPackageName(), PackageManager.GET_SIGNING_CERTIFICATES).signingInfo.getApkContentsSigners();
+            }
+
+            if (signatures == null) {
+                signatures = reactContext.getPackageManager().getPackageInfo(reactContext.getPackageName(), PackageManager.GET_SIGNATURES).signatures;
+            }
+
+            int value = 1;
+
+            for (Signature signature : signatures) {
+                value *= signature.hashCode();
+            }
+
+            if (promise != null) {
+                WritableMap map = Arguments.createMap();
+
+                map.putInt("certificateHash", value);
+
+                promise.resolve(map);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void createDisplayListener() {
         displayManager = (DisplayManager) reactContext.getSystemService(Context.DISPLAY_SERVICE);
