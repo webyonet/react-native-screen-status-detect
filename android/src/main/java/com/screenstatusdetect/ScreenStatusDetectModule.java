@@ -112,7 +112,7 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     @SuppressLint("PackageManagerGetSignatures")
-    public void getCertificateSHA1Fingerprint(Promise promise) {
+    public void getCertificateFingerprint(Promise promise) {
         PackageManager pm = reactContext.getPackageManager();
         String packageName = reactContext.getPackageName();
         int flags = PackageManager.GET_SIGNATURES;
