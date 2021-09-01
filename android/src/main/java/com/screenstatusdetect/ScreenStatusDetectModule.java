@@ -145,13 +145,23 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
             e.printStackTrace();
         }
 
-        String hexString = null;
+        String sha1 = null;
+        String md5 = null;
+        String sha256 = null;
 
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");
             assert c != null;
             byte[] publicKey = md.digest(c.getEncoded());
-            hexString = byte2HexFormatted(publicKey);
+            sha1 = byte2HexFormatted(publicKey);
+
+             MessageDigest mdMd5 = MessageDigest.getInstance("MD5");
+             byte[] publicKeyMd5 = mdMd5.digest(c.getEncoded());
+             md5 = byte2HexFormatted(publicKeyMd5);
+
+             MessageDigest mdSha256 = MessageDigest.getInstance("SHA256");
+             byte[] publicKeySha256 = mdSha256.digest(c.getEncoded());
+             sha256 = byte2HexFormatted(publicKeySha256);
         } catch (NoSuchAlgorithmException | CertificateEncodingException e1) {
             e1.printStackTrace();
         }
@@ -159,7 +169,9 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
         if (promise != null) {
             WritableMap map = Arguments.createMap();
 
-            map.putString("fingerprint", hexString);
+            map.putString("sha1", sha1);
+            map.putString("md5", md5);
+            map.putString("sha256", sha256);
 
             promise.resolve(map);
         }
@@ -170,7 +182,7 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
     public void getCertificateValue(Promise promise) {
         try {
             Signature[] signatures = null;
-            
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 signatures = reactContext.getPackageManager().getPackageInfo(reactContext.getPackageName(), PackageManager.GET_SIGNING_CERTIFICATES).signingInfo.getApkContentsSigners();
             }
