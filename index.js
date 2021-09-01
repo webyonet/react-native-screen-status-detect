@@ -64,7 +64,7 @@ export default class ScreenStatusDetect {
         if (Platform.OS === 'android') {
             return await NativeScreenStatusDetect.getCertificateSHA1Fingerprint();
         } else {
-            console.log('(getCertificateSHA1Fingerprint) this method is only available on android platform');
+            console.log('(getCertificateFingerprint) this method is only available on android platform');
         }
 
         return null;
