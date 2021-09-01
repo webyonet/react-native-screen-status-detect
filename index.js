@@ -60,7 +60,7 @@ export default class ScreenStatusDetect {
         }
     }
 
-    static async getCertificateSHA1Fingerprint() {
+    static async getCertificateFingerprint() {
         if (Platform.OS === 'android') {
             return await NativeScreenStatusDetect.getCertificateSHA1Fingerprint();
         } else {
