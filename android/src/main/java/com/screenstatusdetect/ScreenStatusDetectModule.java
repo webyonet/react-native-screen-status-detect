@@ -295,7 +295,7 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void unsubscribe() {
-    if (displayManager != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+    if (displayManager != null && contentObserver != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
       reactContext.getContentResolver().unregisterContentObserver(contentObserver);
       displayManager.unregisterDisplayListener(displayListener);
     }
