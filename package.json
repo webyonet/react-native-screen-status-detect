@@ -1,7 +1,7 @@
 {
   "name": "react-native-screen-status-detect",
   "title": "React Native Screen Status Detect",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "React native screen status detect",
   "homepage": "https://github.com/webyonet/react-native-permissions#README",
   "main": "index.js",
