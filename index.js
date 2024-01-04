@@ -29,6 +29,10 @@ export default class ScreenStatusDetect {
         return await NativeScreenStatusDetect.getCurrentStatus();
     }
 
+    static async checkIsBlueStacks() {
+        return await NativeScreenStatusDetect.checkIsBlueStacks();
+    }
+
     static addListener(callback) {
         if (typeof callback === 'function') {
             let key = GetKey(callback);
