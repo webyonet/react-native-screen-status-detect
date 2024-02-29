@@ -4,6 +4,7 @@ package com.screenstatusdetect;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
@@ -25,12 +26,19 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.io.FileInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.List;
+import android.content.pm.ResolveInfo;
+import android.app.ActivityManager;
+import android.content.Intent;
+
+import static android.content.Context.ACTIVITY_SERVICE;
 
 public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
   private final ReactApplicationContext reactContext;
@@ -236,6 +244,140 @@ public class ScreenStatusDetectModule extends ReactContextBaseJavaModule {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  private final String[] QEMU_DRIVERS = {"goldfish"};
+  private final String[] GENY_FILES = {
+          "/dev/socket/genyd",
+          "/dev/socket/baseband_genyd"
+  };
+  private final String[] PIPES = {
+          "/dev/socket/qemud",
+          "/dev/qemu_pipe"
+  };
+  private final String[] X86_FILES = {
+          "ueventd.android_x86.rc",
+          "x86.prop",
+          "ueventd.ttVM_x86.rc",
+          "init.ttVM_x86.rc",
+          "fstab.ttVM_x86",
+          "fstab.vbox86",
+          "init.vbox86.rc",
+          "ueventd.vbox86.rc"
+  };
+  private final String[] ANDY_FILES = {
+          "fstab.andy",
+          "ueventd.andy.rc"
+  };
+  private final String[] NOX_FILES = {
+          "fstab.nox",
+          "init.nox.rc",
+          "ueventd.nox.rc"
+  };
+
+  @ReactMethod
+  public void isEmulator(Promise promise) {
+    if (checkAdvanced() || checkPackageName(reactContext)) {
+      promise.resolve(true);
+    } else {
+      promise.resolve(false);
+    }
+  }
+
+  private boolean checkAdvanced() {
+    return checkFiles(GENY_FILES) || checkFiles(ANDY_FILES) || checkFiles(NOX_FILES) || checkQEmuDrivers() || checkFiles(PIPES) || (checkFiles(X86_FILES));
+  }
+
+  private boolean checkQEmuDrivers() {
+    for (File drivers_file : new File[]{new File("/proc/tty/drivers"), new File("/proc/cpuinfo")}) {
+      if (drivers_file.exists() && drivers_file.canRead()) {
+        byte[] data = new byte[1024];
+
+        try {
+          InputStream is = new FileInputStream(drivers_file);
+          is.read(data);
+          is.close();
+        } catch (Exception exception) {
+          exception.printStackTrace();
+        }
+
+        String driver_data = new String(data);
+        for (String known_qemu_driver : QEMU_DRIVERS) {
+          if (driver_data.contains(known_qemu_driver)) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private boolean checkFiles(String[] targets) {
+    for (String pipe : targets) {
+      File qemu_file = new File(pipe);
+      if (qemu_file.exists()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean checkPackageName(Context context) {
+    final PackageManager packageManager = context.getPackageManager();
+
+    Intent intent = new Intent(Intent.ACTION_MAIN, null);
+    intent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+    @SuppressLint("QueryPermissionsNeeded")
+    List<ResolveInfo> availableActivities = packageManager.queryIntentActivities(intent, 0);
+    for(ResolveInfo resolveInfo : availableActivities){
+      if (resolveInfo.activityInfo.packageName.startsWith("com.bluestacks.")) {
+        return true;
+      }
+    }
+
+    @SuppressLint("QueryPermissionsNeeded")
+    List<ApplicationInfo> packages = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
+
+    for (ApplicationInfo packageInfo : packages) {
+      String packageName = packageInfo.packageName;
+
+      if (packageName.startsWith("com.vphone.")) {
+        return true;
+      } else if (packageName.startsWith("com.bignox.")) {
+        return true;
+      } else if (packageName.startsWith("com.nox.mopen.app")) {
+        return true;
+      } else if (packageName.startsWith("me.haima.")) {
+        return true;
+      } else if (packageName.startsWith("com.bluestacks.")) {
+        return true;
+      } else if (packageName.startsWith("cn.itools.") && (Build.PRODUCT.startsWith("iToolsAVM"))) {
+        return true;
+      } else if (packageName.startsWith("com.kop.")) {
+        return true;
+      } else if (packageName.startsWith("com.kaopu.")) {
+        return true;
+      } else if (packageName.startsWith("com.microvirt.")) {
+        return true;
+      } else if (packageName.equals("com.google.android.launcher.layouts.genymotion")) {
+        return true;
+      }
+    }
+
+    ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
+    List<ActivityManager.RunningServiceInfo> servicesInfo = manager.getRunningServices(30);
+
+    for (ActivityManager.RunningServiceInfo serviceInfo : servicesInfo) {
+      String serviceName = serviceInfo.service.getClassName();
+
+      if (serviceName.startsWith("com.bluestacks.")) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)

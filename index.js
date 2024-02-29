@@ -84,6 +84,16 @@ export default class ScreenStatusDetect {
         return null;
     }
 
+    static async isEmulator() {
+        if (Platform.OS === 'android') {
+            return await NativeScreenStatusDetect.isEmulator();
+        } else {
+            console.log('(isEmulator) this method is only available on android platform');
+        }
+
+        return null;
+    }
+
     static enableSecureScreen() {
         if (Platform.OS === 'android') {
             NativeScreenStatusDetect.enableSecureScreen();
