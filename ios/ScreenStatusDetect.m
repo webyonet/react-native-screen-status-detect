@@ -14,6 +14,10 @@
                                                      selector:@selector(screenStatusChange)
                                                          name:UIScreenCapturedDidChangeNotification
                                                        object:nil];
+            [[NSNotificationCenter defaultCenter] addObserver:self
+                                                     selector:@selector(screenStatusChangeForScreenshot)
+                                                         name:UIApplicationUserDidTakeScreenshotNotification
+                                                       object:nil];
             [self addListener:@"screenStatusChange"];
         } else {
             // Fallback on earlier versions
@@ -25,6 +29,10 @@
 
 + (BOOL)requiresMainQueueSetup {
   return YES;
+}
+
+-(void)screenStatusChangeForScreenshot {
+    [self sendEventWithName:@"screenStatusChange" body:@{@"screenStatus": @"TAKE_SCREENSHOT"}];
 }
 
 -(void)screenStatusChange {
